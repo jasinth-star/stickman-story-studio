@@ -1,0 +1,229 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stickman Story Studio</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;background:#080d19;color:#f3f6ff;
+  font-family:Arial,sans-serif;padding:20px
+}
+h1{color:#c8ff36;font-size:27px}
+p{color:#aab5cc;line-height:1.5}
+.panel{
+  background:#121c30;border:1px solid #293752;
+  border-radius:16px;padding:16px;margin:15px 0
+}
+input,textarea,button{
+  width:100%;padding:13px;border-radius:9px;
+  margin-top:8px;font-size:15px
+}
+input,textarea{
+  background:#080d19;color:white;
+  border:1px solid #394864
+}
+button{
+  background:#c8ff36;color:#101609;
+  font-weight:bold;border:0;cursor:pointer
+}
+button.secondary{background:#25334c;color:white}
+canvas{
+  display:block;width:100%;height:auto;
+  background:#10192b;border-radius:12px
+}
+.row{display:flex;gap:8px}
+.row button{flex:1}
+#caption{text-align:center;font-size:19px;font-weight:bold}
+small{color:#aab5cc}
+</style>
+</head>
+<body>
+<h1>⚡ STICKMAN STUDIO</h1>
+<p>Create animated stories for your YouTube Shorts.</p>
+
+<div class="panel">
+  <label for="story"><b>Your story idea</b></label>
+  <textarea id="story" rows="3">A boy walks alone at night. He hears a strange sound behind him. He turns around and sees two glowing eyes in the darkness. He must decide whether to run or investigate.</textarea>
+  <button onclick="buildStory()">✨ Create Story Scenes</button>
+</div>
+
+<div class="panel">
+  <canvas id="screen" width="360" height="520"></canvas>
+  <p id="caption">Your story begins...</p>
+  <div class="row">
+    <button onclick="togglePlay()" id="play">⏸ Pause</button>
+    <button class="secondary" onclick="nextScene()">Next Scene ➜</button>
+  </div>
+  <p><small id="progress">Scene 1</small></p>
+</div>
+
+<div class="panel">
+  <h3>🎬 Story scenes</h3>
+  <div id="sceneList"></div>
+</div>
+
+<p><small>Prototype v1 · More features coming next.</small></p>
+
+<script>
+const canvas=document.getElementById("screen");
+const ctx=canvas.getContext("2d");
+let scenes=[];
+let sceneIndex=0;
+let playing=true;
+let frame=0;
+let lastTime=0;
+let animationId=0;
+
+function buildStory(){
+  const text=document.getElementById("story").value.trim();
+  if(!text){alert("Write a story idea first!");return;}
+
+  scenes=text.split(/[.!?\n]+/)
+    .map(s=>s.trim()).filter(Boolean)
+    .map((text,i)=>({text,number:i+1}));
+
+  sceneIndex=0;
+  renderList();
+  showScene();
+}
+
+function renderList(){
+  document.getElementById("sceneList").innerHTML="";
+  scenes.forEach((s,i)=>{
+    const b=document.createElement("button");
+    b.className="secondary";
+    b.textContent=(i+1)+". "+s.text;
+    b.style.textAlign="left";
+    b.style.marginBottom="5px";
+    b.onclick=()=>{sceneIndex=i;showScene()};
+    document.getElementById("sceneList").appendChild(b);
+  });
+}
+
+function showScene(){
+  if(!scenes.length)return;
+  document.getElementById("caption").textContent=
+    scenes[sceneIndex].text;
+  document.getElementById("progress").textContent=
+    "Scene "+(sceneIndex+1)+" of "+scenes.length;
+}
+
+function nextScene(){
+  if(!scenes.length)buildStory();
+  else{
+    sceneIndex=(sceneIndex+1)%scenes.length;
+    frame=0;
+    showScene();
+  }
+}
+
+function togglePlay(){
+  playing=!playing;
+  document.getElementById("play").textContent=
+    playing?"⏸ Pause":"▶ Play";
+}
+
+function circle(x,y,r,color){
+  ctx.beginPath();
+  ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fillStyle=color;
+  ctx.fill();
+}
+
+function line(x1,y1,x2,y2,color,width=5){
+  ctx.beginPath();
+  ctx.moveTo(x1,y1);
+  ctx.lineTo(x2,y2);
+  ctx.strokeStyle=color;
+  ctx.lineWidth=width;
+  ctx.lineCap="round";
+  ctx.stroke();
+}
+
+function draw(){
+  const w=360,h=520;
+  ctx.clearRect(0,0,w,h);
+
+  const g=ctx.createLinearGradient(0,0,0,h);
+  g.addColorStop(0,"#10172b");
+  g.addColorStop(1,"#25314a");
+  ctx.fillStyle=g;
+  ctx.fillRect(0,0,w,h);
+
+  // Moon and stars
+  circle(285,75,29,"#e9f0c4");
+  circle(297,65,27,"#10172b");
+
+  for(let i=0;i<24;i++){
+    const x=(i*83+21)%350;
+    const y=(i*47+24)%210;
+    circle(x,y,1.5,"#dce5ff");
+  }
+
+  // Distant buildings
+  ctx.fillStyle="#172238";
+  for(let i=0;i<7;i++){
+    const x=i*57-10;
+    const bh=70+(i*31)%90;
+    ctx.fillRect(x,330-bh,48,bh);
+    for(let j=0;j<3;j++){
+      ctx.fillStyle="#c5e5a0";
+      ctx.fillRect(x+9+j%2*17,340-bh,5,7);
+      ctx.fillStyle="#172238";
+    }
+  }
+
+  // Ground
+  line(0,430,360,430,"#64728c",2);
+
+  const step=playing?Math.sin(frame*.09)*9:0;
+  const x=125+Math.sin(frame*.025)*8;
+  const y=350;
+
+  // Stickman body and walking legs
+  circle(x,y-66,18,"#f0d0a8");
+  circle(x-6,y-68,2.5,"#10172b");
+  circle(x+6,y-68,2.5,"#10172b");
+  line(x,y-47,x,y+5,"#e6ecf7",6);
+  line(x,y-30,x-22,y-10+step,"#e6ecf7",5);
+  line(x,y-30,x+22,y-12-step,"#e6ecf7",5);
+  line(x,y+5,x-15+step,y+43,"#e6ecf7",6);
+  line(x-15+step,y+43,x-22+step,y+65,"#e6ecf7",5);
+  line(x,y+5,x+15-step,y+42,"#e6ecf7",6);
+  line(x+15-step,y+42,x+24-step,y+62,"#e6ecf7",5);
+
+  // Mysterious glowing eyes
+  const spooky=sceneIndex>=2;
+  if(spooky){
+    circle(258,326,21,"#243e49");
+    circle(251,324,5,"#c8ff36");
+    circle(266,324,5,"#c8ff36");
+    ctx.shadowColor="#c8ff36";
+    ctx.shadowBlur=15;
+    circle(251,324,3,"white");
+    circle(266,324,3,"white");
+    ctx.shadowBlur=0;
+  }
+
+  ctx.fillStyle="#c8ff36";
+  ctx.font="bold 13px Arial";
+  ctx.fillText("NIGHT WATCH",18,28);
+
+  if(playing)frame++;
+  animationId=requestAnimationFrame(draw);
+}
+
+function start(){
+  if(animationId)cancelAnimationFrame(animationId);
+  draw();
+}
+
+buildStory();
+start();
+</script>
+</body>
+  </html>
+  
