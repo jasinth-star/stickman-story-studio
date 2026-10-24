@@ -1,229 +1,145 @@
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Stickman Story Studio</title>
 <style>
+:root{color-scheme:dark;--bg:#080d18;--panel:#101a2b;--line:#24334c;--lime:#c7ff3d;--teal:#62e6d3;--muted:#9eacc2}
 *{box-sizing:border-box}
-body{
-  margin:0;background:#080d19;color:#f3f6ff;
-  font-family:Arial,sans-serif;padding:20px
-}
-h1{color:#c8ff36;font-size:27px}
-p{color:#aab5cc;line-height:1.5}
-.panel{
-  background:#121c30;border:1px solid #293752;
-  border-radius:16px;padding:16px;margin:15px 0
-}
-input,textarea,button{
-  width:100%;padding:13px;border-radius:9px;
-  margin-top:8px;font-size:15px
-}
-input,textarea{
-  background:#080d19;color:white;
-  border:1px solid #394864
-}
-button{
-  background:#c8ff36;color:#101609;
-  font-weight:bold;border:0;cursor:pointer
-}
-button.secondary{background:#25334c;color:white}
-canvas{
-  display:block;width:100%;height:auto;
-  background:#10192b;border-radius:12px
-}
-.row{display:flex;gap:8px}
-.row button{flex:1}
-#caption{text-align:center;font-size:19px;font-weight:bold}
-small{color:#aab5cc}
+body{margin:0;background:radial-gradient(circle at top,#14213a 0,#080d18 45%);color:#f5f7fb;font:16px/1.5 system-ui,Arial,sans-serif}
+header{padding:25px 18px 18px;max-width:1050px;margin:auto}
+h1{margin:0;font-size:clamp(28px,5vw,44px);line-height:1.08}
+h1 span{color:var(--lime)}
+p{color:var(--muted)}
+main{max-width:1050px;margin:auto;padding:0 18px 36px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:linear-gradient(160deg,#121d30,#0d1422);border:1px solid var(--line);border-radius:18px;padding:18px;min-width:0}
+h2{font-size:17px;margin:0 0 12px}
+label{display:block;font-size:13px;color:var(--teal);font-weight:800;letter-spacing:.07em;margin:12px 0 6px}
+textarea,select{width:100%;background:#080e19;border:1px solid #30415c;border-radius:10px;padding:12px;color:#fff;font:inherit}
+textarea{min-height:105px;resize:vertical}
+button{border:0;border-radius:10px;padding:12px 14px;background:var(--lime);color:#10160a;font-weight:850;font-size:14px;cursor:pointer}
+button.secondary{background:#1c2a40;color:#f5f7fb;border:1px solid #34445f}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.actions button{flex:1}
+canvas{display:block;width:100%;background:#050812;border:1px solid #27364e;border-radius:12px;aspect-ratio:9/16;max-height:470px;object-fit:contain}
+.hint{font-size:12px;color:var(--muted)}
+#story{white-space:pre-wrap;background:#080e19;border:1px solid #263650;border-radius:10px;padding:12px;min-height:160px;color:#e7edf8;font-size:14px}
+.pill{display:inline-block;color:var(--lime);font-size:11px;font-weight:900;letter-spacing:.12em;margin-bottom:8px}
+.full{grid-column:1/-1}
+.status{font-size:13px;color:var(--teal);min-height:20px;margin-top:8px}
+@media(max-width:760px){main{grid-template-columns:1fr}.full{grid-column:auto}}
 </style>
 </head>
 <body>
-<h1>⚡ STICKMAN STUDIO</h1>
-<p>Create animated stories for your YouTube Shorts.</p>
-
-<div class="panel">
-  <label for="story"><b>Your story idea</b></label>
-  <textarea id="story" rows="3">A boy walks alone at night. He hears a strange sound behind him. He turns around and sees two glowing eyes in the darkness. He must decide whether to run or investigate.</textarea>
-  <button onclick="buildStory()">✨ Create Story Scenes</button>
-</div>
-
-<div class="panel">
-  <canvas id="screen" width="360" height="520"></canvas>
-  <p id="caption">Your story begins...</p>
-  <div class="row">
-    <button onclick="togglePlay()" id="play">⏸ Pause</button>
-    <button class="secondary" onclick="nextScene()">Next Scene ➜</button>
-  </div>
-  <p><small id="progress">Scene 1</small></p>
-</div>
-
-<div class="panel">
-  <h3>🎬 Story scenes</h3>
-  <div id="sceneList"></div>
-</div>
-
-<p><small>Prototype v1 · More features coming next.</small></p>
-
+<header>
+<div class="pill">BETA • RUNS IN YOUR BROWSER</div>
+<h1>STICKMAN <span>STORY STUDIO</span></h1>
+<p>Turn a scary idea into a short script, preview a simple stickman scene, hear a browser voice, and export a silent animation clip.</p>
+</header>
+<main>
+<section class="card">
+<h2>1. Create your story</h2>
+<label for="idea">STORY IDEA</label>
+<textarea id="idea">A boy gets on the last ferry home, but the passenger at the back has no face.</textarea>
+<label for="mood">MOOD</label>
+<select id="mood"><option value="scary">Scary / suspense</option><option value="funny">Funny twist</option><option value="mystery">Mystery</option><option value="survival">Survival</option></select>
+<label for="ending">ENDING STYLE</label>
+<select id="ending"><option value="cliffhanger">Cliffhanger</option><option value="twist">Unexpected twist</option><option value="resolved">Complete ending</option></select>
+<div class="actions"><button id="generate">Generate script</button><button class="secondary" id="speak">🔊 Read aloud</button></div>
+<div class="status" id="status" role="status"></div>
+</section>
+<section class="card">
+<h2>2. Animation preview</h2>
+<canvas id="scene" width="360" height="640"></canvas>
+<div class="actions"><button id="play">▶ Play preview</button><button class="secondary" id="export">Export WebM</button></div>
+<p class="hint">Export makes a short silent WebM animation. Voice playback uses your browser and is not mixed into the exported video yet.</p>
+</section>
+<section class="card full">
+<h2>3. Your short-form script</h2>
+<div id="story">Your generated story will appear here.</div>
+<div class="actions"><button class="secondary" id="copy">Copy script</button><button class="secondary" id="download">Download script (.txt)</button></div>
+</section>
+<section class="card full">
+<h2>What this first version can do</h2>
+<p>Generate a structured short script, preview a basic animated scene, read the script aloud using available browser speech, and export a silent animation. This is a starter version—not full AI video generation. AI narration, custom scenes, music/SFX, and polished MP4 export need additional tools or a backend/API.</p>
+</section>
+</main>
 <script>
-const canvas=document.getElementById("screen");
-const ctx=canvas.getContext("2d");
-let scenes=[];
-let sceneIndex=0;
-let playing=true;
-let frame=0;
-let lastTime=0;
-let animationId=0;
+const $=id=>document.getElementById(id);
+let currentScript='',raf=0;
+function makeScript(){
+const idea=$('idea').value.trim()||'A mysterious stranger appears at the last ferry.';
+const mood=$('mood').value,ending=$('ending').value;
+const moodLine={scary:'The lights flicker. A quiet tapping comes from behind him.',funny:'Everything goes wrong in the most ridiculous way.',mystery:'A small clue appears where nobody was looking.',survival:'The clock is running out, and the exit is blocked.'}[mood];
+const endLine={cliffhanger:'Then a voice behind him whispers: “You were never supposed to be here.” CUT TO BLACK.',twist:'He turns around—and discovers the warning was meant for someone else. Or was it?',resolved:'He finds the answer, escapes, and finally reaches safety.'}[ending];
+currentScript=`TITLE: THE LAST FERRY
 
-function buildStory(){
-  const text=document.getElementById("story").value.trim();
-  if(!text){alert("Write a story idea first!");return;}
+[0–2s • HOOK]
+${idea}
 
-  scenes=text.split(/[.!?\n]+/)
-    .map(s=>s.trim()).filter(Boolean)
-    .map((text,i)=>({text,number:i+1}));
+[2–18s • SETUP]
+A lone stickman steps into the dim light. The ferry is almost empty. One passenger sits perfectly still in the far corner.
 
-  sceneIndex=0;
-  renderList();
-  showScene();
+[18–40s • BUILD]
+He checks the time. The doors lock. ${moodLine} He takes one careful step closer, and the passenger slowly turns.
+
+[40–60s • REVEAL]
+The passenger points at the dark window. In the reflection, someone is standing directly behind him—but the room itself is empty.
+
+[60–75s • ENDING]
+${endLine}
+
+[VIEWER QUESTION]
+Would you investigate or jump off at the next stop? Comment your choice.`;
+$('story').textContent=currentScript;
+$('status').textContent='Script created. Edit the idea and generate again whenever you want.';
+drawScene(0);
 }
-
-function renderList(){
-  document.getElementById("sceneList").innerHTML="";
-  scenes.forEach((s,i)=>{
-    const b=document.createElement("button");
-    b.className="secondary";
-    b.textContent=(i+1)+". "+s.text;
-    b.style.textAlign="left";
-    b.style.marginBottom="5px";
-    b.onclick=()=>{sceneIndex=i;showScene()};
-    document.getElementById("sceneList").appendChild(b);
-  });
+function drawScene(t){
+const c=$('scene'),x=c.getContext('2d'),w=c.width,h=c.height;
+x.clearRect(0,0,w,h);
+const grad=x.createLinearGradient(0,0,0,h);grad.addColorStop(0,'#101a30');grad.addColorStop(1,'#03050b');x.fillStyle=grad;x.fillRect(0,0,w,h);
+x.fillStyle='#142943';x.fillRect(18,90,w-36,150);
+for(let i=0;i<4;i++){x.fillStyle='#75d9e8';x.globalAlpha=.16+((Math.sin(t/300+i)+1)*.08);x.fillRect(30+i*76,105,58,120)}x.globalAlpha=1;
+x.fillStyle='#27334a';x.fillRect(0,470,w,170);
+x.strokeStyle='#3c4d69';x.lineWidth=3;x.beginPath();x.moveTo(0,470);x.lineTo(w,470);x.stroke();
+const bx=105+Math.sin(t/300)*13,by=385;
+x.strokeStyle='#f4f6fb';x.lineWidth=7;x.lineCap='round';x.beginPath();x.arc(bx,by-74,20,0,Math.PI*2);x.moveTo(bx,by-54);x.lineTo(bx,by+8);x.moveTo(bx,by-35);x.lineTo(bx-30,by-12);x.moveTo(bx,by-35);x.lineTo(bx+28,by-18);x.moveTo(bx,by+8);x.lineTo(bx-23,by+50);x.moveTo(bx,by+8);x.lineTo(bx+25,by+48);x.stroke();
+const px=255,py=390+Math.sin(t/500)*4;
+x.fillStyle='#070910';x.beginPath();x.ellipse(px,py+10,43,88,0,0,Math.PI*2);x.fill();
+x.fillStyle='#ff334d';x.shadowColor='#ff1744';x.shadowBlur=18;x.beginPath();x.arc(px,py-67,4,0,Math.PI*2);x.arc(px+17,py-67,4,0,Math.PI*2);x.fill();x.shadowBlur=0;
+x.fillStyle='#f5f7fb';x.font='bold 18px system-ui';x.textAlign='center';x.fillText('THE LAST FERRY',w/2,42);
+x.fillStyle='#c7ff3d';x.font='bold 12px system-ui';x.fillText('WHO IS THAT?',w/2,580);
+x.fillStyle='#94a4bc';x.font='11px system-ui';x.fillText('STICKMAN STORY STUDIO • PREVIEW',w/2,610);
 }
-
-function showScene(){
-  if(!scenes.length)return;
-  document.getElementById("caption").textContent=
-    scenes[sceneIndex].text;
-  document.getElementById("progress").textContent=
-    "Scene "+(sceneIndex+1)+" of "+scenes.length;
+function animate(duration=5000){
+cancelAnimationFrame(raf);const start=performance.now();
+function frame(now){drawScene(now-start);if(now-start<duration)raf=requestAnimationFrame(frame);else drawScene(0)}
+raf=requestAnimationFrame(frame);
 }
-
-function nextScene(){
-  if(!scenes.length)buildStory();
-  else{
-    sceneIndex=(sceneIndex+1)%scenes.length;
-    frame=0;
-    showScene();
-  }
-}
-
-function togglePlay(){
-  playing=!playing;
-  document.getElementById("play").textContent=
-    playing?"⏸ Pause":"▶ Play";
-}
-
-function circle(x,y,r,color){
-  ctx.beginPath();
-  ctx.arc(x,y,r,0,Math.PI*2);
-  ctx.fillStyle=color;
-  ctx.fill();
-}
-
-function line(x1,y1,x2,y2,color,width=5){
-  ctx.beginPath();
-  ctx.moveTo(x1,y1);
-  ctx.lineTo(x2,y2);
-  ctx.strokeStyle=color;
-  ctx.lineWidth=width;
-  ctx.lineCap="round";
-  ctx.stroke();
-}
-
-function draw(){
-  const w=360,h=520;
-  ctx.clearRect(0,0,w,h);
-
-  const g=ctx.createLinearGradient(0,0,0,h);
-  g.addColorStop(0,"#10172b");
-  g.addColorStop(1,"#25314a");
-  ctx.fillStyle=g;
-  ctx.fillRect(0,0,w,h);
-
-  // Moon and stars
-  circle(285,75,29,"#e9f0c4");
-  circle(297,65,27,"#10172b");
-
-  for(let i=0;i<24;i++){
-    const x=(i*83+21)%350;
-    const y=(i*47+24)%210;
-    circle(x,y,1.5,"#dce5ff");
-  }
-
-  // Distant buildings
-  ctx.fillStyle="#172238";
-  for(let i=0;i<7;i++){
-    const x=i*57-10;
-    const bh=70+(i*31)%90;
-    ctx.fillRect(x,330-bh,48,bh);
-    for(let j=0;j<3;j++){
-      ctx.fillStyle="#c5e5a0";
-      ctx.fillRect(x+9+j%2*17,340-bh,5,7);
-      ctx.fillStyle="#172238";
-    }
-  }
-
-  // Ground
-  line(0,430,360,430,"#64728c",2);
-
-  const step=playing?Math.sin(frame*.09)*9:0;
-  const x=125+Math.sin(frame*.025)*8;
-  const y=350;
-
-  // Stickman body and walking legs
-  circle(x,y-66,18,"#f0d0a8");
-  circle(x-6,y-68,2.5,"#10172b");
-  circle(x+6,y-68,2.5,"#10172b");
-  line(x,y-47,x,y+5,"#e6ecf7",6);
-  line(x,y-30,x-22,y-10+step,"#e6ecf7",5);
-  line(x,y-30,x+22,y-12-step,"#e6ecf7",5);
-  line(x,y+5,x-15+step,y+43,"#e6ecf7",6);
-  line(x-15+step,y+43,x-22+step,y+65,"#e6ecf7",5);
-  line(x,y+5,x+15-step,y+42,"#e6ecf7",6);
-  line(x+15-step,y+42,x+24-step,y+62,"#e6ecf7",5);
-
-  // Mysterious glowing eyes
-  const spooky=sceneIndex>=2;
-  if(spooky){
-    circle(258,326,21,"#243e49");
-    circle(251,324,5,"#c8ff36");
-    circle(266,324,5,"#c8ff36");
-    ctx.shadowColor="#c8ff36";
-    ctx.shadowBlur=15;
-    circle(251,324,3,"white");
-    circle(266,324,3,"white");
-    ctx.shadowBlur=0;
-  }
-
-  ctx.fillStyle="#c8ff36";
-  ctx.font="bold 13px Arial";
-  ctx.fillText("NIGHT WATCH",18,28);
-
-  if(playing)frame++;
-  animationId=requestAnimationFrame(draw);
-}
-
-function start(){
-  if(animationId)cancelAnimationFrame(animationId);
-  draw();
-}
-
-buildStory();
-start();
+$('generate').onclick=makeScript;
+$('play').onclick=()=>animate(8000);
+$('speak').onclick=()=>{
+if(!currentScript)makeScript();
+if(!('speechSynthesis' in window)){$('status').textContent='Speech playback is not supported by this browser.';return}
+speechSynthesis.cancel();const utter=new SpeechSynthesisUtterance(currentScript);utter.rate=.9;utter.pitch=.85;speechSynthesis.speak(utter);
+};
+$('copy').onclick=async()=>{if(!currentScript)makeScript();try{await navigator.clipboard.writeText(currentScript);$('status').textContent='Script copied.'}catch(e){$('status').textContent='Copy was blocked by the browser. Use Download script instead.'}};
+$('download').onclick=()=>{if(!currentScript)makeScript();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([currentScript],{type:'text/plain'}));a.download='stickman-story.txt';a.click();URL.revokeObjectURL(a.href)};
+$('export').onclick=()=>{
+const c=$('scene');
+if(!c.captureStream||!window.MediaRecorder){$('status').textContent='WebM recording is not supported in this browser. Try Chrome on your laptop.';return}
+try{
+const stream=c.captureStream(30);let mime='video/webm;codecs=vp8';if(!MediaRecorder.isTypeSupported(mime))mime='video/webm';
+const rec=new MediaRecorder(stream,{mimeType:mime}),chunks=[];
+rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+rec.onstop=()=>{const blob=new Blob(chunks,{type:'video/webm'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='stickman-preview.webm';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('status').textContent='Animation exported. It is silent and uses WebM format.';stream.getTracks().forEach(track=>track.stop())};
+rec.start();animate(7000);$('status').textContent='Recording 7-second animation…';setTimeout(()=>{if(rec.state!=='inactive')rec.stop()},7200);
+}catch(e){$('status').textContent='Could not export on this browser. Try Chrome on your laptop.'}
+};
+makeScript();
 </script>
 </body>
-  </html>
-  
+</html>
